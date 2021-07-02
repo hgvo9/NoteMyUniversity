@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
 import UniversityService from './services/university'
+import { MapContainer, TileLayer, Popup, Marker } from 'react-leaflet'
 
 const containerStyle = {
   width: '70vw',
@@ -24,9 +24,6 @@ interface IUniversity {
 }
 
 function Map() {
-    const { isLoaded, loadError } = useLoadScript({
-        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY!,
-    });
 
     const [universities, setUniversities] = useState<IUniversity[]>();
 
@@ -44,30 +41,34 @@ function Map() {
       if (universities !== undefined) {
         Object.keys(universities).forEach((value: string, index: number) => {
           const university: IUniversity = universities[index]
-          jsx.push(<Marker position={{lat: parseFloat(university.latitude), lng: parseFloat(university.longtitude)}} key={university.pk} />)
+          jsx.push(
+            <Marker position={[parseFloat(university.latitude), parseFloat(university.longtitude)]} key={university.pk}>
+              <Popup>
+                {university.name}
+              </Popup>
+            </Marker>
+          )
         });
       }
       return jsx;
     }
     
-
-    if (loadError || !isLoaded) {
-        return (
-            <p>Error</p>
-        );
-    }
-    
     return (
       <div className="App">
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={center}
-          zoom={3}
+        <MapContainer 
+          center={[37.0902, -95.7129]} 
+          zoom={3} 
+          zoomControl={false} 
+          style={{ height: '100vh', width: '100%' }}
         >
+          <TileLayer
+            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
           {
             universities && universities.length > 0 ? universityMarkers() : null
           }
-        </GoogleMap>
+        </MapContainer>
       </div>
     );
 }
